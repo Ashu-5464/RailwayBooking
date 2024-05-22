@@ -1,24 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../Main.css';
 import bannerImage from '../assets/banner-2.png'; // Import the image
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { MyContextProvider, SearchContext, useSearchContext } from '../Context/MyContextProvider'; // Assuming you have defined MyContextProvider correctly
 
 const Navbar = () => {
-    const navigate=useNavigate();
     const [cityList, setCityList] = useState([]);
-     const[hideDivImage,sethideDivImage]=useState([]);
+    const [hideImageDiv , sethideImageDiv] = useState([]);
+    const navigate = useNavigate();
+   const { updateTravelDetails} = useContext(SearchContext);
+   const [stationObj, setStationObj] = useState({
+    fromStation: "",
+    toStation: "",
+    travelDate: "",
+  });
+
+    const handleSearchButtonClick = () => { 
+        navigate('/search');
+        sethideImageDiv(false);
+    };
+ 
+
+      const handleChange = (field,value) => {
+    const updatedStationObj ={...stationObj,[field]:value};
+    setStationObj(updatedStationObj);
+    updateTravelDetails(updatedStationObj);
+  };
+
+   
     useEffect(() => {
         getAllStations();
-       
     }, []);
- const handleSearchButton=()=>
-    {
-        navigate('/search');
-        sethideDivImage(false);
-    }
+
     const getAllStations = async () => {
         try {
             const result = await axios.get('https://freeapi.miniprojectideas.com/api/TrainApp/GetAllStations');
@@ -31,11 +47,7 @@ const Navbar = () => {
         }
     }
 
-    const [isOpen, setIsOpen] = useState(false);
 
-    const toggleDropdown = () => {
-        setIsOpen(!isOpen);
-    };
     return (
 
         <>
@@ -63,8 +75,8 @@ const Navbar = () => {
                     </div>
                 </div>
             </nav>
-            {hideDivImage &&(
-            <div className="container">
+            {hideImageDiv && (
+            <div className="container pt-3 mt-3">
                 <div className="row d-flex justify-content-center align-items-center">
                     <div className="col-lg-12 col-xl-11">
                         <div className="text-black">
@@ -76,18 +88,20 @@ const Navbar = () => {
                                             <div className="row">
                                                 <div className="col-6">
                                                     <label className="form-label" htmlFor="fromStation">From Station</label>
-                                                    <select id="fromStation" className="form-select">
+                                                    <select id="fromStation" className="form-select"
+                                                     onChange={(e) => handleChange('fromStation',e.target.value)}>
                                                     <option value="From Station">From Station</option>
                                                         {cityList.map(city => (
                                                             <option key={city.stationID} value={city.stationID}>
-                                                                {city.stationName}
+                                                                {city.stationName} 
                                                             </option>
                                                         ))}
                                                     </select>
                                                 </div>
                                                 <div className="col-6">
                                                     <label className="form-label" htmlFor="toStation">To Station</label>
-                                                    <select id="toStation" className="form-select">
+                                                    <select id="toStation" className="form-select"
+                                                     onChange={(e) => handleChange('toStation',e.target.value)}>
                                                         <option value="To Station">To Station</option>
                                                         {cityList.map(city => (
                                                             <option key={city.stationID} value={city.stationID}>
@@ -100,11 +114,12 @@ const Navbar = () => {
                                             <div className="row pt-3">
                                                 <div className="col-6">
                                                     <label className="form-label" htmlFor="travelDate">Date Of Travel</label>
-                                                    <input type="date" id="travelDate" className="form-control" />
+                                                    <input type="date" id="travelDate" className="form-control" 
+                                                      onChange={(e) => handleChange('travelDate',e.target.value)}/>
                                                 </div>
                                             </div>
                                             <div className="d-flex justify-content-center mt-4 mx-4 mb-3 mb-lg-4">
-                                                <button type="button" className="btn btn-primary"onClick={handleSearchButton}>Search</button>
+                                                <button type="button" className="btn btn-primary" onClick={handleSearchButtonClick}>Search</button>
                                             </div>
                                         </form>
                                     </div>
@@ -118,7 +133,7 @@ const Navbar = () => {
                     </div>
                 </div>
             </div>
-           ) }
+)}
         </>
 
 
